@@ -25,7 +25,7 @@ prepare_provenance:
 
 prepare_config:
 	mkdir -p build
-	cd ./build && git clone https://github.com/CamFlow/camconfd.git
+	cd ./build && git clone https://github.com/Wajihulhassan/camconfd.git
 	cd ./build/camconfd && $(MAKE) prepare
 
 prepare_cli:
@@ -35,7 +35,7 @@ prepare_cli:
 
 prepare_service:
 	mkdir -p build
-	cd ./build && git clone https://github.com/CamFlow/camflowd.git
+	cd ./build && git clone https://github.com/Wajihulhassan/camflowd.git
 	cd ./build/camflowd && $(MAKE) prepare
 
 prepare_smatch:
