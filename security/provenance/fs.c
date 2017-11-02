@@ -224,13 +224,13 @@ static ssize_t prov_write_node(struct file *file, const char __user *buf,
 	}
 	if (prov_type(node) == ENT_DISC || prov_type(node) == ACT_DISC || prov_type(node) == AGT_DISC) {
 		spin_lock_nested(prov_lock(cprov), PROVENANCE_LOCK_TASK);
-		write_node(prov_elt(cprov));
+		__write_node(prov_entry(cprov));
 		copy_identifier(&node->disc_node_info.parent, &prov_elt(cprov)->node_info.identifier);
 		spin_unlock(prov_lock(cprov));
 		node_identifier(node).id = prov_next_node_id();
 		node_identifier(node).boot_id = prov_boot_id;
 		node_identifier(node).machine_id = prov_machine_id;
-		long_prov_write(node);
+		__write_node(node);
 	} else{ // the node is not of disclosed type
 		count = -EINVAL;
 		goto out;
@@ -524,13 +524,9 @@ static ssize_t prov_read_secctx(struct file *filp, char __user *buf,
 		return -ENOMEM;
 	data = (struct secinfo*)buf;
 
-	rtn = security_secid_to_secctx(data->secid, &ctx, &len);        // read secctx
-	if (rtn == -EOPNOTSUPP) {                                       // this is not supported by the main LSM
-		snprintf(data->secctx, PATH_MAX, "%d", data->secid);
-		rtn = 0;
-		goto out;
-	}else if (rtn < 0)
-		goto out;
+	rtn = security_secid_to_secctx(data->secid, &ctx, &len); // read secctx
+	if (rtn < 0)
+		return rtn;
 	if (len < PATH_MAX) {
 		if (copy_to_user(data->secctx, ctx, len)) {
 			rtn = -ENOMEM;
