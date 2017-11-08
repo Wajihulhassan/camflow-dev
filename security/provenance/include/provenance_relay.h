@@ -126,8 +126,6 @@ static inline void __write_node(prov_entry_t *node)
 	if (filter_node(node) || provenance_is_recorded(node))   // filtered or already recorded
 		return;
 	set_recorded(node);
-	if (unlikely(node_identifier(node).machine_id != prov_machine_id))
-		node_identifier(node).machine_id = prov_machine_id;
 	if( provenance_is_long(node) )
 		long_prov_write(node);
 	else
@@ -152,9 +150,6 @@ static inline int write_relation(const uint64_t type,
 	if (!should_record_relation(type, f, t))
 		return 0;
 
-	__write_node(f);
-	__write_node(t);
-
 	memset(&relation, 0, sizeof(union prov_elt));
 	prov_type(&relation) = type;
 	relation_identifier(&relation).id = prov_next_relation_id();
@@ -167,6 +162,8 @@ static inline int write_relation(const uint64_t type,
 		relation.relation_info.offset = file->f_pos;
 	}
 	rc = call_query_hooks(f, t, (prov_entry_t*)&relation);
+	__write_node(f);
+	__write_node(t);
 	prov_write(&relation);
 	return rc;
 }
